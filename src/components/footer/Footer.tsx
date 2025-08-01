@@ -1,5 +1,5 @@
 import { Todo } from '../../types/Todo';
-import { Filter } from '../filter/filter';
+import { Filter } from '../filter/Filter';
 
 type Props = {
   filter: (query: string) => void;

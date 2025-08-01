@@ -29,16 +29,6 @@ export const ErrorMessage: React.FC<Props> = ({ error, hideError }) => {
         onClick={() => hideError(null)}
       />
       {error}
-
-      {/* Unable to load todos
-            <br />
-            Title should not be empty
-            <br />
-            Unable to add a todo
-            <br />
-            Unable to delete a todo
-            <br />
-            Unable to update a todo */}
     </div>
   );
 };

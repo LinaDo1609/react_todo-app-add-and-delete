@@ -1,20 +1,21 @@
 import classNames from 'classnames';
 import { Todo } from '../../types/Todo';
-import { Loader } from '../loader/loader';
+import { Loader } from '../loader/Loader';
 import { useState } from 'react';
 
 type Props = {
   todo: Todo;
   deleteTodo: (postId: number) => Promise<void>;
+  tempLoader?: boolean;
 };
 
-export const TodoItem: React.FC<Props> = ({ todo, deleteTodo }) => {
-  const [isLoading, setIsLoading] = useState(false);
+export const TodoItem: React.FC<Props> = ({ todo, deleteTodo, tempLoader }) => {
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: number) => {
-    setIsLoading(true);
+    setLoading(true);
     deleteTodo(id).then(() => {
-      setIsLoading(false);
+      setLoading(false);
     });
   };
 
@@ -44,7 +45,7 @@ export const TodoItem: React.FC<Props> = ({ todo, deleteTodo }) => {
                 value="Todo is being edited now"
               />
             </form> 
-    форма появляется, когда ми хотим редактировать пост, место title и кнопки 
+
     */}
 
       <span data-cy="TodoTitle" className="todo__title">
@@ -61,7 +62,7 @@ export const TodoItem: React.FC<Props> = ({ todo, deleteTodo }) => {
       </button>
 
       {/* overlay will cover the todo while it is being deleted or updated */}
-      <Loader loading={isLoading} />
+      <Loader loading={loading || tempLoader} />
     </div>
   );
 };

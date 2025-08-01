@@ -1,18 +1,18 @@
-import { NewTodo } from '../newTodo/newTodo';
+import { NewTodo } from '../newTodo/NewTodo';
 import classNames from 'classnames';
 
 type Props = {
   toggleAll: number;
   addPost: (title: string) => Promise<void>;
-  loading: boolean;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
+  shouldFocus: boolean;
 };
 
 export const Header: React.FC<Props> = ({
   toggleAll,
   addPost,
-  loading,
   setError,
+  shouldFocus,
 }) => {
   return (
     <header className="todoapp__header">
@@ -23,7 +23,11 @@ export const Header: React.FC<Props> = ({
         data-cy="ToggleAllButton"
       />
 
-      <NewTodo handleAdd={addPost} setError={setError} loading={loading} />
+      <NewTodo
+        handleAdd={addPost}
+        setError={setError}
+        shouldFocus={shouldFocus}
+      />
 
       {/* Add a todo on form submit */}
     </header>

@@ -4,7 +4,7 @@ type Props = {
   loading?: boolean;
 };
 
-export const Loader: React.FC<Props> = ({ loading = true }) => {
+export const Loader: React.FC<Props> = ({ loading }) => {
   return (
     <div
       data-cy="TodoLoader"

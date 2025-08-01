@@ -1,35 +1,52 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Footer } from './components/footer/Footer';
-import { ErrorMessage } from './components/errorMessage/error';
-import { Header } from './components/header/header';
-import { TodoList } from './components/todoList/todoList';
+import { ErrorMessage } from './components/errorMessage/Error';
+import { Header } from './components/header/Header';
+import { TodoList } from './components/todoList/TodoList';
 import { addTodo, deleteTodo, getTodos } from './api/todos';
 import { Todo } from './types/Todo';
 
 export const App: React.FC = () => {
-  const FILTERS = {
-    all: 'all',
-    completed: 'completed',
-    active: 'active',
-  };
+  enum FILTERS {
+    all = 'all',
+    completed = 'completed',
+    active = 'active',
+  }
 
   const [todoList, setTodoList] = useState<Todo[]>([]);
-  const [filteredList, setFilteredList] = useState<Todo[]>([]);
-  const [completedTodos, setCompletedTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState('all');
   const [error, setError] = useState<string | null>(null);
-  const [unCompletedCount, setUnCompletedCount] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const [shouldFocus, setShouldFocus] = useState(true);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [filterQuery, setFilterQuery] = useState('all');
+
+  const filteredTodos = useMemo(() => {
+    return todoList.filter(todo => {
+      switch (filter) {
+        case FILTERS.completed:
+          return todo.completed === true;
+        case FILTERS.active:
+          return todo.completed === false;
+        default:
+          return true;
+      }
+    });
+  }, [todoList, filter, FILTERS.completed, FILTERS.active]);
+
+  const completedTodos = useMemo(() => {
+    return todoList.filter(todo => todo.completed === true);
+  }, [todoList]);
+
+  const unCompletedCount = useMemo(() => {
+    return todoList.filter(todo => todo.completed === false).length;
+  }, [todoList]);
 
   //  перша загрузка данних на сторінку
   useEffect(() => {
     getTodos()
       .then(data => {
         setTodoList(data);
-        setFilteredList(data);
       })
       .catch(() => {
         setError('Unable to load todos');
@@ -47,36 +64,12 @@ export const App: React.FC = () => {
 
   // обробка фільтрів
   const handleFilter = (query: string) => {
-    setFilterQuery(query);
-    switch (query) {
-      case FILTERS.completed:
-        setFilteredList(todoList.filter(todo => todo.completed === true));
-        break;
-      case FILTERS.active:
-        setFilteredList(todoList.filter(todo => todo.completed === false));
-        break;
-      default:
-        setFilteredList(todoList);
-    }
+    setFilter(query);
   };
-
-  // ми перевіряємо чи всі todo виконані, аби для кнопки в header,
-  // а також для лічильника активних todo в footer
-  useEffect(() => {
-    const uncompleted = todoList.filter(todo => todo.completed === false);
-
-    setCompletedTodos(todoList.filter(todo => todo.completed === true)); //фільтруємо виконані todos
-    setUnCompletedCount(uncompleted.length); // лічільник активних todos
-    
-    handleFilter(filterQuery); // застосовуємо фільтр до списку todos
-
-
-  }, [todoList]);
 
   const addPost = (title: string) => {
     setError(null); // очищаємо помилку, якщо вона була
-
-    setLoading(true);
+    setShouldFocus(false); // вимикаємо фокус на інпуті
     setTempTodo({
       id: 0,
       userId: 3217,
@@ -87,26 +80,31 @@ export const App: React.FC = () => {
     return addTodo(title)
       .then(newPost => {
         setTodoList(prevList => [...prevList, newPost]);
-        setLoading(false);
         setTempTodo(null);
+        setShouldFocus(true); // знову вмикаємо фокус на інпуті
       })
       .catch(() => {
         setError('Unable to add a todo');
         setTempTodo(null);
-        setLoading(false);
-        throw new Error('Unable to add a todo');
+        setShouldFocus(true);
+
+        return Promise.reject();
       });
   };
 
+  // видалення todo
   const deletePost = (postId: number) => {
     setError(null);
+    setShouldFocus(false);
 
     return deleteTodo(postId)
-      .then(() =>
-        setTodoList(prevTodos => prevTodos.filter(todo => todo.id !== postId)),
-      )
+      .then(() => {
+        setTodoList(prevTodos => prevTodos.filter(todo => todo.id !== postId));
+        setShouldFocus(true);
+      })
       .catch(() => {
         setError('Unable to delete a todo');
+        setShouldFocus(true);
       });
   };
 
@@ -118,12 +116,12 @@ export const App: React.FC = () => {
         <Header
           toggleAll={unCompletedCount}
           addPost={addPost}
-          loading={loading}
           setError={setError}
+          shouldFocus={shouldFocus}
         />
 
         <TodoList
-          todoList={filteredList}
+          todoList={filteredTodos}
           todoTemp={tempTodo}
           deleteTodo={deletePost}
         />

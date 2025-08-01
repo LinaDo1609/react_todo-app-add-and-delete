@@ -1,7 +1,5 @@
-import classNames from 'classnames';
 import { Todo } from '../../types/Todo';
-import { TodoItem } from '../Todo/todo';
-import { Loader } from '../loader/loader';
+import { TodoItem } from '../Todo/TodoItem';
 
 type Props = {
   todoList: Todo[];
@@ -22,27 +20,12 @@ export const TodoList: React.FC<Props> = ({
 
       {/* todoTemp з'являється, коли йде загрузка запиту на додавання todo до серверу */}
       {todoTemp && (
-        <div
-          data-cy="Todo"
-          className={classNames('todo', { completed: todoTemp.completed })}
+        <TodoItem
+          todo={todoTemp}
           key={todoTemp.id}
-        >
-          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-          <label className="todo__status-label">
-            <input
-              data-cy="TodoStatus"
-              type="checkbox"
-              className="todo__status"
-              checked={todoTemp.completed}
-            />
-          </label>
-
-          <span data-cy="TodoTitle" className="todo__title">
-            {todoTemp.title}
-          </span>
-
-          <Loader />
-        </div>
+          deleteTodo={deleteTodo}
+          tempLoader={true}
+        />
       )}
     </section>
   );
